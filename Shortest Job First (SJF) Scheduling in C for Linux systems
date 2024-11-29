@@ -1,0 +1,387 @@
+#include<stdio.h>
+#include<stdlib.h>
+//creation of the type NODE.
+typedef struct NODE{
+	int c1;
+	int E;
+	int c2;
+}NODE;
+NODE* creatN(NODE* &N,int C1,int E,int C2 ){
+	NODE *n=new NODE;
+    n->c1=C1;
+    n->E=E;
+    n->c2=C2;
+return n;	
+}
+//creation of type process.
+typedef struct proc{
+	struct NODE *NODE;
+    struct proc *suiv;
+}proc;
+
+proc* creatP(proc* &p ,NODE N){
+	proc *P=new proc;
+	P->NODE=&N;
+	P->suiv=NULL;
+	return P;
+}
+
+//function to add a process.
+void add_process(proc* &p,NODE N){
+	if (p==NULL){
+		p= creatP(p,N);
+	}
+	else{
+		
+		while(p->suiv!=NULL){
+			p=p->suiv;
+		}
+		
+	}
+	}
+//function to add a NODE.	
+	void addNODE(NODE *& N,int C1 ,int E,int C2){
+	if (N==NULL){
+		N=creatN(N,C1,E,C2);	
+	}}
+
+//function of sum c1 and c2 and E.
+int somme_de_processus( NODE n){
+	
+return n.c1+n.c2+n.E ;	
+
+	}
+//function of putting the resaults of sum in an array ordered min to max.
+void remplir_tabeau_sommes(proc* p ,int *T,int size){
+	int i=0;
+	while(p!=NULL && i<size){
+		T[i]=somme_de_processus(*(p->NODE));
+		p = p->suiv;
+        i++;
+       	
+	}
+	
+}
+// function to swap the the position of two elements
+void swap(int *a, int *b) {
+  int temp = *a;
+  *a = *b;
+  *b = temp;
+}
+//funtion to sort the array of sum
+void selectionSort(int *T, int size) {
+  for (int j= 0; j < size - 1; j++) {
+    int min_idx = j;
+    for (int i = j + 1; i < size; i++) {
+
+      // To sort in descending order, change > to < in this line.
+      // Select the minimum element in each loop.
+      if (T[i] < T[min_idx])
+        min_idx = i;
+    }
+
+    // put min at the correct position
+    swap(&T[min_idx], &T[j]);
+  }
+}
+   //calculer la somme de k pour k=n.
+int sommeK(char **M,int k,int n){
+	int s=0;
+	k=0;
+	while(k<=n){
+		s+=k;
+		k++;
+	}
+	return s;
+	
+}
+
+void sjf(char **M,int n,int m ,int *TAB ,NODE node,proc p){
+	//part declaration.
+	int* T;
+	int c1;
+	int E;
+	int c2;
+	proc* P=&p;
+	NODE* N=&node;
+	int b;
+	m=b;
+	int l=0;
+	int k,y;
+	int j=0;
+	//adding processus and NODEs.
+	printf("you are in sjf no preemeptive protocole please enter the number of processus that you want");
+printf("Enter the number of processes: ");
+scanf("%d", &b);
+
+for (int l = 0; l < b; l++) {
+    // Initialize a new file for each process
+   P = creatP(P,&N);
+    printf("Enter the values of (C, E/S). If you don't want to enter E/S, press Enter.\n");
+    scanf("%d", &c1);
+    scanf("%d", &E);
+    scanf("%d", &c2);
+    addNode(N, c1, E,c2);
+    add_process(P,&N);
+	}
+    // Capture the result of somme_de_processus if needed
+    int result = somme_de_processus(*N);
+    // Call remplir_tabeau_sommes and selectionSort after the loop ends
+    remplir_tabeau_sommes(P, T, b);
+    selectionSort(T, b);
+    l++;
+
+
+
+
+	//part 1 une matrice qui affiche p quand i=0 et j=0:j=m.
+	 proc* suiv= P->suiv;
+	   N= P->NODE;
+	for(y=0;y<m;y++){
+	 suiv[y];
+      N[
+          
+    while(k=0){
+	M[k][y]='p';
+	printf("%c" ,M[k][y] );
+		}	
+	//first P.
+		while(( N!=NULL )|| (suiv!=NULL) ){
+		while(T[j]==somme_de_processus(*N)){
+				for(k=1;k<N->c1;k++){
+					M[k][y]='A';
+					printf("%c" ,M[k][y] );
+				}
+				for(k>N->c1;k<N->E;k++){
+					 M[k][y] = 'B';
+					 	printf("%c" ,M[k][y] );
+				}
+				while(y+1 || y-1){
+					if(M[k][y]='A'){
+						while(k>N->E){
+							M[k][y]='P';
+							printf("%c" ,M[k][y] );
+				        	k++ ;
+							}
+					}else{
+						if(M[k][y]!='A'){
+							for(k>N->E;k<N->c2;k++){
+								M[k][y]='A';
+								printf("%c" ,M[k][y] );
+								
+							}
+						}
+					
+					}y++;
+					y--;
+				}
+				while(k>N->c2){
+					M[k][y]='T';
+					printf("%c" ,M[k][y] );
+				}
+				}
+	//other Ps.
+			while(T[j+1]==somme_de_processus(*N))
+			{
+					while(y+1 || y-1){
+					if(M[k][y]='A'){
+						while(k=1){
+							M[k][y]='P';
+							printf("%c" ,M[k][y] );
+					k++;
+					}}
+					if(M[k][y]!='A'){
+						while(k<N->c1){
+							M[k][y]='A';
+								printf("%c" ,M[k][y] );
+					k++;}
+					if(M[k][y]='B'){
+						while(k>N->c1){
+						M[k][y]='b'	;
+							printf("%c" ,M[k][y] );
+						k++;
+						}
+					}
+					if(M[k][y]!='B'){
+						while(k<N->E){
+							M[k][y]='b'	;
+								printf("%c" ,M[k][y] );
+							k++;
+						}
+					}
+						if(M[k][y]='A'){
+						while(k>N->E){
+							M[k][y]='P';
+							printf("%c" ,M[k][y] );
+					k++;
+					}}
+					if(M[k][y]!='A'){
+						while(k<N->c2){
+							M[k][y]='A';
+								printf("%c" ,M[k][y] );
+					k++;}
+							
+					}y++;
+					y--;}
+					while(k>N->c2){
+					M[k][y]='T';
+					printf("%c" ,M[k][y] );
+				}
+			j++;}
+			}
+			
+			
+			
+		}
+		
+		
+	}n=sommeK(M,k,n);
+//last part un tableau qui affiche les indice de la processus 0...n.
+for(k=0;k<n;k++){
+	printf("%d" ,TAB[k]);
+}	}	
+
+void sjf_preemeptive(char **M,int n,int m ,int *TAB ,NODE node,proc p){
+	//part declaration.
+		int* T;
+	int c1;
+	int E;
+	int c2;
+	proc* P=&p;
+	NODE* N=&node;
+	int b;
+	m=b;
+	int l=0;
+	int k,y;
+	int j=0;
+	//adding processus and NODEs.
+	printf("you are in sjf no preemeptive protocole please enter the number of processus that you want");
+printf("Enter the number of processes: ");
+scanf("%d", &b);
+
+for (int l = 0; l < b; l++) {
+    // Initialize a new file for each process
+   P = creatP(P,&N);
+    printf("Enter the values of (C, E/S). If you don't want to enter E/S, press Enter.\n");
+    scanf("%d", &c1);
+    scanf("%d", &E);
+    scanf("%d", &c2);
+    addNode(N, c1, E,c2);
+    add_process(P,&N);
+	}
+    // Capture the result of somme_de_processus if needed
+    int result = somme_de_processus(*N);
+    // Call remplir_tabeau_sommes and selectionSort after the loop ends
+remplir_tabeau_sommes(P, T, b);
+selectionSort(T, b);
+    l++;
+
+	//part 1 une matrice qui affiche p quand i=0 et j=0:j=m.
+  proc* suiv= P->suiv;
+	   N= P->NODE;
+	for(y=0;y<m;y++){
+		 suiv[y];
+         N[y];
+    while(k=0){
+	M[k][y]='p';
+		printf("%c" ,M[k][y] );
+		}	
+	//first P.
+		while((N !=NULL )|| (suiv!=NULL) ){
+		while(T[j]==somme_de_processus(*N)){
+				for(k=1;k<N->c1;k++){
+					M[k][y]='A';	printf("%c" ,M[k][y] );
+				}
+				for(k>N->c1;k<N->E;k++){
+					 M[k][y] = 'B';
+					 	printf("%c" ,M[k][y] );	
+	            }
+				for(k>N->E;k<N->c2;k++){
+			    	M[k][y]='A';
+								printf("%c" ,M[k][y] );	
+							}
+				while(k>N->c2){
+					M[k][y]='T';
+						printf("%c" ,M[k][y] );
+				}			
+						}
+	//other Ps.
+			while(T[j+1]==somme_de_processus(*N)){
+					while(y+1 || y-1){
+					if(M[k][y]=='A'){
+						while(k=0){
+							M[k][y]='P';
+								printf("%c" ,M[k][y] );
+					k++;
+					}}
+					if(M[k][y]!='A'){
+						while(k<N->c1){
+							M[k][y]='A';
+								printf("%c" ,M[k][y] );
+					k++;}
+					if(M[k][y]=='B'){
+						while(k>N->c1){
+						M[k][y]='b'	;
+							printf("%c" ,M[k][y] );
+						k++;
+						}
+					}
+					if(M[k][y]!='B'){
+						while(k<N->E){
+							M[k][y]='b'	;
+								printf("%c" ,M[k][y] );
+							k++;
+						}
+					}
+						if(M[k][y]=='A'){
+						while(k>N->E){
+							M[k][y]='P';
+								printf("%c" ,M[k][y] );
+					k++;
+					}}
+					if(M[k][y]!='A'){
+						while(k<N->c2){
+							M[k][y]='A';
+								printf("%c" ,M[k][y] );
+					k++;}
+						
+							
+					}y++;
+					y--;}
+						while(k>N->c2){
+					M[k][y]='T';
+						printf("%c" ,M[k][y] );
+				}
+			j++;}
+			}	
+		}	
+	} n=sommeK(M,k,n);
+	//last part un tableau qui affiche les indice de la processus 0...n.
+for(k=0;k<n;k++){
+	printf("%d" ,TAB[k]);
+}	}
+main(){
+	//partie déclaration.
+	char **M;
+	int n,m,t;
+	proc P;
+	NODE N;
+	char u;
+	//partie main.
+	printf("if you want to use sjf protocol enter Q if you want to use sjf preemeptive protocol enter W");
+	scanf("%s",&u);
+	if( u='Q'){
+		sjf(M,n,m,&t,N,P);
+		//time functions.
+	}else{
+		if( u='w'){
+		sjf_preemeptive(M,n,m,&t,N,P);
+		//time fuctions.	
+		}
+	}
+}
+
+
+
+	
+	
