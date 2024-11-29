@@ -1,0 +1,510 @@
+#include <iostream>
+using namespace std;
+
+// Structure to represent a process
+struct Process {
+    int arrival_time;
+    int num_operations;
+    int *operations; // 0: CPU, 1: I/O
+    int *times;      // Burst times for CPU and I/O operations
+    int job;
+};
+
+// Function to input processes
+void input_processes(Process *processes, int num_processes) {
+    for (int i = 0; i < num_processes; i++) {
+        cout << "Enter arrival time for process P" << i + 1 << ": ";
+        cin >> processes[i].arrival_time;
+        cout << "Enter the number of operations for process P" << i + 1 << ": ";
+        cin >> processes[i].num_operations;
+
+        // Allocate memory for operations and times arrays
+        processes[i].operations = new int[processes[i].num_operations];
+        processes[i].times = new int[processes[i].num_operations];
+
+        // Input operations for each operation
+        cout << "Enter operations for process P" << i + 1 << " (0 for CPU, 1 for I/O): ";
+        for (int j = 0; j < processes[i].num_operations; j++) {
+            cin >> processes[i].operations[j];
+        }
+
+        // Input times for each operation
+        cout << "Enter times for process P" << i + 1 << ": ";
+        for (int j = 0; j < processes[i].num_operations; j++) {
+            cin >> processes[i].times[j];
+        }
+    }
+}
+
+// Function to make processes in order
+void order_processes(Process *processes, int num_processes) {
+    int sum_times[num_processes];
+    for (int i = 0; i < num_processes; i++) {
+        sum_times[i] = 0;
+        for (int j = 0; j < processes[i].num_operations; j++) {
+            sum_times[i] += processes[i].times[j];
+        }
+    }
+
+    for (int j = 1; j <= num_processes; j++) {
+        int min = sum_times[0];
+        int idx_min = 0;
+        for (int i = 1; i < num_processes; i++) {
+            if (sum_times[i] < min) {
+                min = sum_times[i];
+                idx_min = i;
+            }
+        }
+        processes[idx_min].job = j;
+        sum_times[idx_min] = 100000000;
+    }
+}
+int SJF_waiting_time_nonpreemptive(Process *processes, int num_processes) {
+    int total_waiting_time = 0;
+    int current_time = 0;
+    int *remaining_time = new int[num_processes];
+
+    for (int i = 0; i < num_processes; i++) {
+        remaining_time[i] = 0;
+        for (int j = 0; j < processes[i].num_operations; j++) {
+            remaining_time[i] += processes[i].times[j];
+        }
+    }
+
+    while (true) {
+        int shortest = -1;
+        int shortest_time = 100000000;
+        bool flag = false;
+
+        for (int i = 0; i < num_processes; i++) {
+            if (processes[i].arrival_time <= current_time && remaining_time[i] < shortest_time && remaining_time[i] > 0) {
+                shortest = i;
+                shortest_time = remaining_time[i];
+                flag = true;
+            }
+        }
+
+        if (!flag) {
+            break;
+        }
+
+        total_waiting_time += current_time - processes[shortest].arrival_time;
+        current_time += shortest_time;
+        remaining_time[shortest] = 0;
+    }
+
+    delete[] remaining_time;
+    return total_waiting_time;
+}
+int SJF_residence_time(Process *processes, int num_processes) {
+    int total_residence_time = 0;
+    int current_time = 0;
+    int *remaining_time = new int[num_processes];
+
+    for (int i = 0; i < num_processes; i++) {
+        remaining_time[i] = 0;
+        for (int j = 0; j < processes[i].num_operations; j++) {
+            remaining_time[i] += processes[i].times[j];
+        }
+    }
+
+    while (true) {
+        int shortest = -1;
+        int shortest_time = 100000000;
+        bool flag = false;
+
+        for (int i = 0; i < num_processes; i++) {
+            if (processes[i].arrival_time <= current_time && remaining_time[i] < shortest_time && remaining_time[i] > 0) {
+                shortest = i;
+                shortest_time = remaining_time[i];
+                flag = true;
+            }
+        }
+
+        if (!flag) {
+            break;
+        }
+
+        total_residence_time += current_time - processes[shortest].arrival_time;
+        current_time += shortest_time;
+        remaining_time[shortest] = 0;
+    }
+
+    delete[] remaining_time;
+    return total_residence_time;
+}
+int SJF_response_time(Process *processes, int num_processes) {
+    int *response_time = new int[num_processes]; // Array to store response times for each process
+    bool *executed = new bool[num_processes];   // Array to track whether each process has been executed
+
+    // Initialize response times and execution status
+    for (int i = 0; i < num_processes; i++) {
+        response_time[i] = -1; // Set response time to -1 initially
+        executed[i] = false;   // Mark process as not executed
+    }
+
+    int current_time = 0; // Current time in the simulation
+
+    // Keep track of the number of processes executed
+    int executed_count = 0;
+
+    while (executed_count < num_processes) {
+        int next_process = -1;
+        int shortest_burst = INT_MAX; // Initialize shortest burst to a large value
+
+        // Find the process with the shortest remaining burst time among those that have arrived
+        for (int i = 0; i < num_processes; i++) {
+            if (!executed[i] && processes[i].arrival_time <= current_time && processes[i].num_operations > 0) {
+                if (processes[i].times[0] < shortest_burst) {
+                    shortest_burst = processes[i].times[0];
+                    next_process = i;
+                }
+            }
+        }
+
+        if (next_process != -1) {
+            // Update response time if it has not been set yet
+            if (response_time[next_process] == -1) {
+                response_time[next_process] = current_time - processes[next_process].arrival_time;
+            }
+
+            // Execute the process for its burst time
+            current_time += processes[next_process].times[0];
+            processes[next_process].arrival_time = current_time; // Update arrival time for subsequent operations
+            processes[next_process].num_operations--; // Decrease the number of remaining operations
+            processes[next_process].times++; // Move to the next operation
+            executed[next_process] = true; // Mark the process as executed
+            executed_count++; // Increment the executed process count
+        } else {
+            // No process is ready to execute, move time to the next arrival
+            int next_arrival = INT_MAX;
+            for (int i = 0; i < num_processes; i++) {
+                if (!executed[i] && processes[i].arrival_time < next_arrival) {
+                    next_arrival = processes[i].arrival_time;
+                }
+            }
+            current_time = next_arrival;
+        }
+    }
+
+    // Calculate the total response time
+    int total_response_time = 0;
+    for (int i = 0; i < num_processes; i++) {
+        total_response_time += response_time[i];
+    }
+
+    delete[] response_time;
+    delete[] executed;
+
+    // Return the average response time
+    return total_response_time / num_processes;
+}
+int SJF_waiting_time_preemptive(Process *processes, int num_processes) {
+    int *waiting_time = new int[num_processes]; // Array to store waiting times for each process
+    int *remaining_time = new int[num_processes]; // Array to store remaining burst times for each process
+    bool *executed = new bool[num_processes];   // Array to track whether each process has been executed
+
+    // Initialize waiting times, remaining times, and execution status
+    for (int i = 0; i < num_processes; i++) {
+        waiting_time[i] = 0; // Initialize waiting time to 0
+        remaining_time[i] = processes[i].times[0]; // Initialize remaining time to burst time of first operation
+        executed[i] = false;   // Mark process as not executed
+    }
+
+    int current_time = 0; // Current time in the simulation
+
+    // Keep track of the number of processes executed
+    int executed_count = 0;
+
+    while (executed_count < num_processes) {
+        int shortest_burst = INT_MAX; // Initialize shortest burst to a large value
+        int next_process = -1;
+
+        // Find the process with the shortest remaining burst time among those that have arrived
+        for (int i = 0; i < num_processes; i++) {
+            if (!executed[i] && processes[i].arrival_time <= current_time && remaining_time[i] < shortest_burst) {
+                shortest_burst = remaining_time[i];
+                next_process = i;
+            }
+        }
+
+        if (next_process != -1) {
+            // Execute the process for a unit of time
+            remaining_time[next_process]--;
+            current_time++;
+
+            // Check if the process has completed its current operation
+            if (remaining_time[next_process] == 0) {
+                // Update waiting time for other processes
+                for (int i = 0; i < num_processes; i++) {
+                    if (!executed[i] && i != next_process && processes[i].arrival_time <= current_time) {
+                        waiting_time[i]++;
+                    }
+                }
+
+                // Move to the next operation if available
+                if (processes[next_process].num_operations > 1) {
+                    processes[next_process].arrival_time = current_time;
+                    processes[next_process].num_operations--;
+                    processes[next_process].times++;
+                    remaining_time[next_process] = processes[next_process].times[0];
+                } else {
+                    // Mark the process as executed
+                    executed[next_process] = true;
+                    executed_count++;
+                }
+            }
+        } else {
+            // No process is ready to execute, move time to the next arrival
+            int next_arrival = INT_MAX;
+            for (int i = 0; i < num_processes; i++) {
+                if (!executed[i] && processes[i].arrival_time < next_arrival) {
+                    next_arrival = processes[i].arrival_time;
+                }
+            }
+            current_time = next_arrival;
+        }
+    }
+
+    // Calculate the total waiting time
+    int total_waiting_time = 0;
+    for (int i = 0; i < num_processes; i++) {
+        total_waiting_time += waiting_time[i];
+    }
+
+    delete[] waiting_time;
+    delete[] remaining_time;
+    delete[] executed;
+
+    // Return the total waiting time
+    return total_waiting_time;
+}
+
+
+void SJF_PREEMPTIVE(Process *processes, int num_processes) {
+    char T[num_processes][50];
+    int k = 1;
+
+    // First details of the table
+    for (int i = 0; i < num_processes; i++) {
+        for (int j = 0; j < 50; j++) {
+            T[i][j] = '-';
+        }
+    }
+
+    // SJF Premptive application
+    for (int m = 0; m < num_processes; m++) {
+        for (int i = 0; i < num_processes; i++) {
+            if (processes[i].job == k) {
+                int start = processes[i].arrival_time;
+                int check;
+                int c = start;
+                int stop = start;
+                for (int j = 0; j < processes[i].num_operations; j++) {
+                    stop += processes[i].times[j];
+                    if (processes[i].operations[j] == 0) {
+                        while (c < stop) {
+                            check = 1;
+                            for (int n = 0; n < num_processes; n++) {
+                                if (T[n][c] == 'A') {
+                                    check = 0;
+                                }
+                            }
+                            if (check == 1) {
+                                T[i][c] = 'A';
+                            } else {
+                                T[i][c] = 'P';
+                                stop++;
+                                start++;
+                            }
+                            c++;
+                        }
+                        start += processes[i].times[j];
+                    }
+                    if (processes[i].operations[j] == 1) {
+                        c = start;
+                        while (c < stop) {
+                            check = 1;
+                            for (int n = 0; n < num_processes; n++) {
+                                if (T[n][c] == 'B') {
+                                    check = 0;
+                                }
+                            }
+                            if (check == 1) {
+                                T[i][c] = 'B';
+                            } else {
+                                T[i][c] = 'b';
+                                stop++;
+                                start++;
+                            }
+                            c++;
+                        }
+                        start += processes[i].times[j];
+                    }
+                }
+                k++;
+                break;
+            }
+        }
+    }
+
+    // Display the table
+    for (int i = 0; i < 50; i++) {
+        cout << "____";
+    }
+    cout << endl;
+
+    for (int i = 0; i < num_processes; i++) {
+        cout << "| P" << i + 1 << " | |";
+        for (int j = 0; j < 50; j++) {
+            cout << T[i][j] << " |";
+        }
+        cout << endl;
+    }
+
+    cout << " |";
+    for (int i = 0; i <= 50; i++) {
+        if (i < 10) {
+            cout << " " << i << "|";
+        } else {
+            cout << i << "|";
+        }
+    }
+    cout << endl;
+
+    for (int i = 0; i < 50; i++) {
+        cout << "____";
+    }
+}
+void SJFnoPREEMPTIVE(Process *processes, int num_processes) {
+    char T[num_processes][50];
+    int k = 1;
+
+    // First details of the table
+    for (int i = 0; i < num_processes; i++) {
+        for (int j = 0; j < 50; j++) {
+            T[i][j] = '-';
+        }
+    }
+
+    // SJF Premptive application
+    for (int m = 0; m < num_processes; m++) {
+        for (int i = 0; i < num_processes; i++) {
+            if (processes[i].job == k) {
+                int start = processes[i].arrival_time;
+                int check;
+                int c = start;
+                int stop = start;
+                for (int j = 0; j < processes[i].num_operations; j++) {
+                    stop += processes[i].times[j];
+                    if (processes[i].operations[j] == 0) {
+                        while (c < stop) {
+                            check = 1;
+                            for (int n = 0; n < num_processes; n++) {
+                                if (T[n][c] == 'A') {
+                                    check = 0;
+                                }
+                            }
+                            if (check == 1) {
+                                T[i][c] = 'A';
+                            } else {
+                                T[i][c] = 'P';
+                                stop++;
+                                start++;
+                            }
+                            c++;
+                        }
+                        start += processes[i].times[j];
+                    }
+                    if (processes[i].operations[j] == 1) {
+                        c = start;
+                        while (c < stop) {
+                            check = 1;
+                            for (int n = 0; n < num_processes; n++) {
+                                if (T[n][c] == 'B') {
+                                    check = 0;
+                                }
+                            }
+                            if (check == 1) {
+                                T[i][c] = 'B';
+                            } else {
+                                T[i][c] = 'b';
+                                stop++;
+                                start++;
+                            }
+                            c++;
+                        }
+                        start += processes[i].times[j];
+                    }
+                }
+                k++;
+                break;
+            }
+        }
+    }
+
+    // Display the table
+    for (int i = 0; i < 50; i++) {
+        cout << "____";
+    }
+    cout << endl;
+
+    for (int i = 0; i < num_processes; i++) {
+        cout << "| P" << i + 1 << " | |";
+        for (int j = 0; j < 50; j++) {
+            cout << T[i][j] << " |";
+        }
+        cout << endl;
+    }
+
+    cout << " |";
+    for (int i = 0; i <= 50; i++) {
+        if (i < 10) {
+            cout << " " << i << "|";
+        } else {
+            cout << i << "|";
+        }
+    }
+    cout << endl;
+
+    for (int i = 0; i < 50; i++) {
+        cout << "____";
+    }
+}
+
+int main() {
+    int num_processes;
+    cout << "Enter the number of processes: ";
+    cin >> num_processes;
+
+    Process *processes = new Process[num_processes];
+    if (processes == NULL) {
+        cout << "Memory allocation failed." << endl;
+        return 1;
+    }
+
+    input_processes(processes, num_processes);
+    order_processes(processes, num_processes);
+     
+        
+	
+    SJF_PREEMPTIVE(processes, num_processes);
+    printf("\n statics : \n");
+  cout << "SJF Preemptive Waiting Time: " << SJF_waiting_time_preemptive(processes, num_processes) << endl;
+	cout << "SJF Non-Preemptive Waiting Time: " << SJF_waiting_time_nonpreemptive(processes, num_processes) << endl;
+    cout << "SJF Residence Time: " << SJF_residence_time(processes, num_processes) << endl;
+    cout << "SJF Response Time: " << SJF_response_time(processes, num_processes) << endl;
+    // Free memory
+    for (int i = 0; i < num_processes; i++) {
+        delete[] processes[i].operations;
+        delete[] processes[i].times;
+    }
+    delete[] processes;
+
+    return 0;
+}
+
+
+
+				
+					
